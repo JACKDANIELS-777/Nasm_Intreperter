@@ -39,7 +39,40 @@ cmd>echo %errorlevel%
 7
 
 -------------------------------------------------------------------------------
-2. MULTI-STATEMENT STREAM PIPELINE PIPING
+2. DYNAMIC VARIABLE ASSIGNMENT & LOOKUP (1-CHARACTER LENGTH LIMIT)
+-------------------------------------------------------------------------------
+The engine handles single-character variables by mapping their raw ASCII values
+directly into memory boundaries. During assignment, the value payload is stored at 
+the shifted register index. During evaluation, the lookup pipeline pulls the cached 
+integer value out of the 'mem' segment on the fly.
+
+Input Stream Passed to Compiler Matrix:
+--> a=99;a+1;
+
+Execution Trace:
+  - Statement 1 (a=99;):
+    * Identifier 'a' (NT: 25, NV: 97 [ASCII 'a']) is parsed.
+    * Assignment Operator (NT: 1) links identifier to Literal 99 (NT: 100, NV: 99).
+    * WalkTree shifts the variable identifier (97 << 3) to locate its unique memory socket.
+    * Value 99 is permanently cached at the computed memory destination.
+  - Statement 2 (a+1;):
+    * Binary Addition Operator (NT: 2) triggers.
+    * Left Child reads Variable Identifier (NT: 25, NV: 97).
+    * WalkTree executes lookup, pulling Value 99 from the 'mem' segment track.
+    * Right Child reads Literal 1 (NT: 100, NV: 1).
+    * Hardware ALU evaluates: 99 + 1 = 100.
+
+Terminal Verification:
+cmd>build.bat
+Build complete! Running program...
+---------------------------------
+a=99;a+1;
+
+cmd>echo %errorlevel%
+100
+
+-------------------------------------------------------------------------------
+3. MULTI-STATEMENT STREAM PIPELINE PIPING
 -------------------------------------------------------------------------------
 The engine loops over sequentially registered statements cached in the 
 'statements' array pool, clearing local tracking flags while preserving 
