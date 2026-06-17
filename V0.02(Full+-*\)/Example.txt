@@ -1,0 +1,65 @@
+===============================================================================
+    DIAMANT INTERPRETER/COMPILER ENGINE v2 (x64 NASM ASSEMBLY)
+===============================================================================
+Developed under a pure bare-metal purist pipeline (Notepad + Windows Cmd Matrix).
+Features a custom inline operator-stack token-hijacking architecture with context-
+aware split jump gates (JLE/JGE) to tame deep recursive precedence climbing.
+
+Zero external dependencies. Zero high-level bloat. Pure register manipulation.
+
+-------------------------------------------------------------------------------
+1. SINGLE STATEMENT EVALUATION (ALU HARDWARE INTEGRATION)
+-------------------------------------------------------------------------------
+The Lexer drains the stream, the Parser constructs the Abstract Syntax Tree (AST) 
+nodes directly within the 'ast_arena' memory segment, and the 'WalkTree' evaluator 
+dynamically executes the dynamic IMUL and IDIV hardware execution tracks.
+
+Input Stream Passed to Compiler Matrix:
+--> 1*9-18/9;
+
+Abstract Syntax Tree Topology Constructed in 'ast_arena':
+            [ - ]  (NT: 2, NV: 2 - Central Subtraction Bridge)
+           /     \
+       [ * ]     [ / ]  (High-Precedence Wings Isolated)
+      /     \   /     \
+    [1]     [9][18]   [9]
+
+Execution Trace:
+  - Left Wing  (1 * 9)  --> IMUL RAX, R13 --> RAX = 9
+  - Right Wing (18 / 9) --> CQO + IDIV R11 --> RAX = 2
+  - Master Root Union   --> SUB R13, RAX   --> RAX = 7
+
+Terminal Verification (Reading Kernel Process Exit Descriptor):
+cmd>build.bat
+Build complete! Running program...
+---------------------------------
+1*9-18/9;
+
+cmd>echo %errorlevel%
+7
+
+-------------------------------------------------------------------------------
+2. MULTI-STATEMENT STREAM PIPELINE PIPING
+-------------------------------------------------------------------------------
+The engine loops over sequentially registered statements cached in the 
+'statements' array pool, clearing local tracking flags while preserving 
+the globally isolated 'VariablePool' context.
+
+Input Stream Passed to Compiler Matrix:
+--> 1*9-18/9;1*9-27/9;
+
+Execution Trace:
+  - Statement 1: (1 * 9) - (18 / 9) = 9 - 2 = 7  [State Reset Cleared]
+  - Statement 2: (1 * 9) - (27 / 9) = 9 - 3 = 6  [Final Exit Process State]
+
+Terminal Verification:
+cmd>build.bat
+Build complete! Running program...
+---------------------------------
+1*9-18/9;1*9-27/9;
+
+cmd>echo %errorlevel%
+6
+===============================================================================
+[METRICS]: 1,400+ LOC | 17,621+ Characters | Pure x64 NASM | 100% Deterministic
+===============================================================================
